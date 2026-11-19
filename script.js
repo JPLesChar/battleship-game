@@ -90,7 +90,7 @@ function drawPlayerShips() {
             const col = +cell.dataset.col;
 
             if (playerBoard[row][col] === 1) {
-                cell.classList.add("player-ship");
+                cell.classList.add("ship-carrier");
             }
         });
 }
