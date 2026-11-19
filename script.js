@@ -229,3 +229,17 @@ document
     .addEventListener("click", newGame);
 
 newGame();
+function drawPlayerShips() {
+
+    document
+        .querySelectorAll("#player-board .cell")
+        .forEach(cell => {
+
+            const row = +cell.dataset.row;
+            const col = +cell.dataset.col;
+
+            if (playerBoard[row][col] === 1) {
+                cell.classList.add("ship-carrier");
+            }
+        });
+}

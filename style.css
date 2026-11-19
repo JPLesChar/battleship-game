@@ -43,3 +43,10 @@ h1 {
 .miss {
     background: white;
 }
+
+.ship-carrier {
+    background-image: url("assets/carrier.svg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
