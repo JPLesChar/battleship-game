@@ -50,17 +50,3 @@ h1 {
     background-repeat: no-repeat;
     background-position: center;
 }
-
-.ship-cruiser {
-    background-image: url("assets/cruiser.svg");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-.ship-patrol {
-    background-image: url("assets/patrol.svg");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
