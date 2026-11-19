@@ -243,3 +243,14 @@ function drawPlayerShips() {
             }
         });
 }
+playerCells[1].classList.add("ship-carrier");
+playerCells[2].classList.add("ship-carrier");
+playerCells[3].classList.add("ship-carrier");
+playerCells[4].classList.add("ship-carrier");
+
+playerCells[10].classList.add("ship-cruiser");
+playerCells[11].classList.add("ship-cruiser");
+playerCells[12].classList.add("ship-cruiser");
+
+playerCells[20].classList.add("ship-patrol");
+playerCells[21].classList.add("ship-patrol");
