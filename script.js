@@ -56,14 +56,29 @@ function placeShips(board) {
                 const r = horizontal ? row : row + i;
                 const c = horizontal ? col + i : col;
 
-                if (
-                    r >= SIZE ||
-                    c >= SIZE ||
-                    board[r][c] !== 0
-                ) {
+                if (r >= SIZE || c >= SIZE) {
                     ok = false;
                     break;
                 }
+
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        const nr = r + dr;
+                        const nc = c + dc;
+
+                        if (
+                            nr >= 0 && nr < SIZE &&
+                            nc >= 0 && nc < SIZE &&
+                            board[nr][nc] !== 0
+                        ) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (!ok) break;
+                }
+
+                if (!ok) break;
             }
 
             if (!ok) continue;
