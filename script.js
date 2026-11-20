@@ -146,11 +146,16 @@ function playerShoot(e) {
 
         computerBoard[row][col] = -1;
         cell.classList.add("hit");
+        statusText.textContent = "Hit! Shoot again";
+
+        checkWin();
+        return;
 
     } else {
 
         computerBoard[row][col] = -2;
         cell.classList.add("miss");
+        statusText.textContent = "Miss! Computer's turn";
     }
 
     checkWin();
@@ -232,6 +237,10 @@ function computerTurn() {
     }
 
     checkWin();
+
+    if (!gameOver) {
+        statusText.textContent = "Your turn";
+    }
 }
 
 function checkWin() {
