@@ -12,7 +12,7 @@ h1 {
 .boards {
     display: flex;
     justify-content: center;
-    gap: 3px;
+    gap: 5px;
     margin-top: 2px;
     flex-wrap: wrap;
 }
