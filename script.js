@@ -13,6 +13,8 @@ const SHIP_COLORS = ["#e74c3c", "#3498db", "#f1c40f", "#2ecc71", "#9b59b6"];
 
 let gameOver = false;
 const computerTargets = [];
+let playerShips = [];
+let computerShips = [];
 
 function createBoard(gridElement, board) {
     gridElement.innerHTML = "";
@@ -33,6 +35,8 @@ function createBoard(gridElement, board) {
 }
 
 function placeShips(board) {
+    const ships = [];
+
     SHIPS.forEach((length, shipIndex) => {
         let placed = false;
 
@@ -73,15 +77,20 @@ function placeShips(board) {
 
             if (!ok) continue;
 
+            const cells = [];
             for (let i = 0; i < length; i++) {
                 const r = horizontal ? row : row + i;
                 const c = horizontal ? col + i : col;
                 board[r][c] = shipIndex + 1;
+                cells.push({ row: r, col: c });
             }
 
+            ships.push({ cells, sunk: false });
             placed = true;
         }
     });
+
+    return ships;
 }
 
 function drawPlayerShips() {
@@ -94,6 +103,18 @@ function drawPlayerShips() {
             cell.classList.add("ship");
             cell.style.backgroundColor = SHIP_COLORS[shipIndex];
         }
+    });
+}
+
+function checkShipSunk(board, ships, gridElement, shipIndex) {
+    const ship = ships[shipIndex - 1];
+    if (ship.sunk || !ship.cells.every(({ row, col }) => board[row][col] === -1)) return;
+
+    ship.sunk = true;
+    ship.cells.forEach(({ row, col }) => {
+        gridElement.querySelector(
+            `.cell[data-row="${row}"][data-col="${col}"]`
+        ).classList.add("sunk");
     });
 }
 
@@ -112,6 +133,7 @@ function playerShoot(e) {
     if (value > 0) {
         computerBoard[row][col] = -1;
         cell.classList.add("hit");
+        checkShipSunk(computerBoard, computerShips, computerGrid, value);
         statusText.textContent = "Hit! Shoot again";
         checkWin();
         return;
@@ -183,6 +205,7 @@ function computerTurn() {
     if (value > 0) {
         playerBoard[row][col] = -1;
         cell.classList.add("hit");
+        checkShipSunk(playerBoard, playerShips, playerGrid, value);
         addComputerTargets(row, col);
     } else {
         playerBoard[row][col] = -2;
@@ -231,8 +254,8 @@ function newGame() {
     createBoard(playerGrid, playerBoard);
     createBoard(computerGrid, computerBoard);
 
-    placeShips(playerBoard);
-    placeShips(computerBoard);
+    playerShips = placeShips(playerBoard);
+    computerShips = placeShips(computerBoard);
 
     drawPlayerShips();
     statusText.textContent = "Your turn";
