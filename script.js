@@ -12,9 +12,61 @@ const SHIPS = [4, 3, 3, 2, 2];
 const SHIP_COLORS = ["#e74c3c", "#3498db", "#f1c40f", "#2ecc71", "#9b59b6"];
 
 let gameOver = false;
+let muted = false;
+let audioContext;
 const computerTargets = [];
 let playerShips = [];
 let computerShips = [];
+
+function getAudioContext() {
+    if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        audioContext = new AudioContextClass();
+    }
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+
+    return audioContext;
+}
+
+function playTone(frequency, duration = 0.12, delay = 0) {
+    if (muted) return;
+
+    const context = getAudioContext();
+    if (!context) return;
+
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const startTime = context.currentTime + delay;
+
+    oscillator.type = "square";
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.08, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + duration);
+}
+
+function playHitSound() {
+    playTone(220, 0.12);
+    playTone(330, 0.12, 0.1);
+}
+
+function playMissSound() {
+    playTone(90, 0.18);
+}
+
+function playWinSound() {
+    playTone(392, 0.12);
+    playTone(494, 0.12, 0.12);
+    playTone(587, 0.2, 0.24);
+}
 
 function createBoard(gridElement, board) {
     gridElement.innerHTML = "";
@@ -122,6 +174,9 @@ function playerShoot(e) {
     if (gameOver) return;
 
     const cell = e.target;
+    if (!cell.classList.contains("cell") || !muted) {
+        getAudioContext();
+    }
     if (!cell.classList.contains("cell")) return;
 
     const row = +cell.dataset.row;
@@ -134,6 +189,7 @@ function playerShoot(e) {
         computerBoard[row][col] = -1;
         cell.classList.add("hit");
         checkShipSunk(computerBoard, computerShips, computerGrid, value);
+        playHitSound();
         statusText.textContent = "Hit! Shoot again";
         checkWin();
         return;
@@ -141,6 +197,7 @@ function playerShoot(e) {
 
     computerBoard[row][col] = -2;
     cell.classList.add("miss");
+    playMissSound();
     statusText.textContent = "Miss! Computer's turn";
     checkWin();
 
@@ -206,10 +263,12 @@ function computerTurn() {
         playerBoard[row][col] = -1;
         cell.classList.add("hit");
         checkShipSunk(playerBoard, playerShips, playerGrid, value);
+        playHitSound();
         addComputerTargets(row, col);
     } else {
         playerBoard[row][col] = -2;
         cell.classList.add("miss");
+        playMissSound();
     }
 
     checkWin();
@@ -239,11 +298,13 @@ function checkWin() {
     if (computerAlive === 0) {
         gameOver = true;
         statusText.textContent = "🎉 You Win!";
+        playWinSound();
     }
 
     if (playerAlive === 0) {
         gameOver = true;
         statusText.textContent = "💀 Computer Wins!";
+        playMissSound();
     }
 }
 
@@ -260,6 +321,15 @@ function newGame() {
     drawPlayerShips();
     statusText.textContent = "Your turn";
 }
+
+const muteButton = document.getElementById("mute");
+muteButton.addEventListener("click", () => {
+    muted = !muted;
+    muteButton.textContent = muted ? "🔇 Unmute" : "🔊 Mute";
+    muteButton.setAttribute("aria-pressed", String(muted));
+
+    if (!muted) getAudioContext();
+});
 
 computerGrid.addEventListener("click", playerShoot);
 document.getElementById("restart").addEventListener("click", newGame);

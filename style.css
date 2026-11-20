@@ -49,6 +49,19 @@ h1 {
     background: white;
 }
 
+.game-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.game-buttons button {
+    padding: 8px 14px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
 @media (max-width: 600px) {
     .board {
         grid-template-columns: repeat(8, 40px);
