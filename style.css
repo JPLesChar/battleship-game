@@ -48,3 +48,15 @@ h1 {
 .miss {
     background: white;
 }
+
+@media (max-width: 600px) {
+    .board {
+        grid-template-columns: repeat(8, 40px);
+        grid-template-rows: repeat(8, 40px);
+    }
+
+    .cell {
+        width: 40px;
+        height: 40px;
+    }
+}
