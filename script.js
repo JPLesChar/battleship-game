@@ -15,6 +15,7 @@ let gameOver = false;
 let muted = false;
 let audioContext;
 const computerTargets = [];
+const computerIgnored = new Set();
 let playerShips = [];
 let computerShips = [];
 
@@ -206,6 +207,31 @@ function playerShoot(e) {
     }
 }
 
+function ignoreAdjacentCells(ship) {
+    ship.cells.forEach(({ row, col }) => {
+        for (let rowOffset = -1; rowOffset <= 1; rowOffset++) {
+            for (let colOffset = -1; colOffset <= 1; colOffset++) {
+                if (rowOffset === 0 && colOffset === 0) continue;
+
+                const targetRow = row + rowOffset;
+                const targetCol = col + colOffset;
+                if (
+                    targetRow >= 0 && targetRow < SIZE &&
+                    targetCol >= 0 && targetCol < SIZE
+                ) {
+                    computerIgnored.add(`${targetRow},${targetCol}`);
+                }
+            }
+        }
+    });
+
+    // Remove candidates queued before the ship was sunk.
+    for (let i = computerTargets.length - 1; i >= 0; i--) {
+        const { row, col } = computerTargets[i];
+        if (computerIgnored.has(`${row},${col}`)) computerTargets.splice(i, 1);
+    }
+}
+
 function addComputerTargets(row, col) {
     const neighbors = [
         [row - 1, col],
@@ -220,6 +246,7 @@ function addComputerTargets(row, col) {
             targetCol >= 0 && targetCol < SIZE &&
             playerBoard[targetRow][targetCol] !== -1 &&
             playerBoard[targetRow][targetCol] !== -2 &&
+            !computerIgnored.has(`${targetRow},${targetCol}`) &&
             !computerTargets.some(target => target.row === targetRow && target.col === targetCol)
         ) {
             computerTargets.push({ row: targetRow, col: targetCol });
@@ -233,7 +260,8 @@ function getComputerTarget() {
 
         if (
             playerBoard[target.row][target.col] !== -1 &&
-            playerBoard[target.row][target.col] !== -2
+            playerBoard[target.row][target.col] !== -2 &&
+            !computerIgnored.has(`${target.row},${target.col}`)
         ) {
             return target;
         }
@@ -245,7 +273,11 @@ function getComputerTarget() {
     do {
         row = Math.floor(Math.random() * SIZE);
         col = Math.floor(Math.random() * SIZE);
-    } while (playerBoard[row][col] === -1 || playerBoard[row][col] === -2);
+    } while (
+        playerBoard[row][col] === -1 ||
+        playerBoard[row][col] === -2 ||
+        computerIgnored.has(`${row},${col}`)
+    );
 
     return { row, col };
 }
@@ -263,6 +295,9 @@ function computerTurn() {
         playerBoard[row][col] = -1;
         cell.classList.add("hit");
         checkShipSunk(playerBoard, playerShips, playerGrid, value);
+        if (playerShips[value - 1].sunk) {
+            ignoreAdjacentCells(playerShips[value - 1]);
+        }
         playHitSound();
         addComputerTargets(row, col);
     } else {
@@ -311,6 +346,7 @@ function checkWin() {
 function newGame() {
     gameOver = false;
     computerTargets.length = 0;
+    computerIgnored.clear();
 
     createBoard(playerGrid, playerBoard);
     createBoard(computerGrid, computerBoard);
